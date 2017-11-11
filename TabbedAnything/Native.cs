@@ -206,8 +206,16 @@ namespace TabbedAnything
 
         public static void RemoveBorder( IntPtr windowHandle )
         {
-            int style = GetWindowLongPtr( windowHandle, GWL_STYLE );
-            SetWindowLongPtr( windowHandle, GWL_STYLE, (int)( ( style & ~( WS_CAPTION ) ) | WS_EX_WINDOWEDGE ) );
+            uint style = (uint)GetWindowLongPtr( windowHandle, GWL_STYLE );
+            style &= ~WS_CAPTION;
+            style &= ~WS_SYSMENU;
+            style &= ~WS_THICKFRAME;
+            style &= ~WS_MINIMIZE;
+            style &= ~WS_MAXIMIZEBOX;
+            SetWindowLongPtr( windowHandle, GWL_STYLE, (int)style );
+
+            style = (uint)GetWindowLongPtr( windowHandle, GWL_EXSTYLE );
+            SetWindowLongPtr( windowHandle, GWL_EXSTYLE, (int)( style | WS_EX_DLGMODALFRAME ) );
         }
 
         public static void SetWindowParent( IntPtr windowHandle, Control parent )
@@ -217,9 +225,11 @@ namespace TabbedAnything
 
         public static Size ResizeToParent( IntPtr windowHandle, Control parent )
         {
-            int width = parent.Width + 23;
-            int height = parent.Height + 23;
-            MoveWindow( windowHandle, -8, -8, width, height, true );
+            int x = 0;
+            int y = 0;
+            int width = parent.Width - x;
+            int height = parent.Height - y;
+            MoveWindow( windowHandle, x, y, width, height, true );
 
             RECT size = new RECT();
             if( GetWindowRect( windowHandle, ref size ) )
