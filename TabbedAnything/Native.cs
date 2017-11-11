@@ -266,5 +266,31 @@ namespace TabbedAnything
         {
             PostMessage( windowHandle, WindowMessage.WM_KEYDOWN, (IntPtr)key, IntPtr.Zero );
         }
+
+        public const uint WINEVENT_OUTOFCONTEXT = 0;
+
+        public const uint EVENT_OBJECT_NAMECHANGE = 0x800C;
+
+        public delegate void WinEventDelegate( IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime );
+
+        [DllImport( "user32.dll" )]
+        public static extern IntPtr SetWinEventHook( uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags );
+
+        [DllImport( "user32.dll" )]
+        public static extern bool UnhookWinEvent( IntPtr hWinEventHook );
+
+        [DllImport( "user32.dll", SetLastError = true, CharSet = CharSet.Auto )]
+        static extern int GetWindowTextLength( IntPtr hWnd );
+
+        [DllImport( "user32.dll", CharSet = CharSet.Auto )]
+        static extern int GetWindowText( IntPtr hWnd, StringBuilder lpString, int nMaxCount );
+
+        public static String GetWindowText( IntPtr hWnd )
+        {
+            int length = GetWindowTextLength( hWnd ) * 2;
+            StringBuilder sb = new StringBuilder( length );
+            GetWindowText( hWnd, sb, length );
+            return sb.ToString();
+        }
     }
 }

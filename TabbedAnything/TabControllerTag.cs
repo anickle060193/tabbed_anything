@@ -21,9 +21,12 @@ namespace TabbedAnything
         public Tab Tab { get; private set; }
         public Process Process { get; private set; }
 
+        private readonly Native.WinEventDelegate _winProcDelegate;
+        private readonly IntPtr _hook;
+
         public static TabControllerTag CreateController( Process p )
         {
-            Tab t = new Tab( "Tab" );
+            Tab t = new Tab( Native.GetWindowText( p.MainWindowHandle ) );
 
             TabControllerTag tag = new TabControllerTag( t, p );
 
@@ -41,6 +44,9 @@ namespace TabbedAnything
 
             Process.Exited += Process_Exited;
             Process.EnableRaisingEvents = true;
+
+            _winProcDelegate = new Native.WinEventDelegate( WinEventProc );
+            _hook = Native.SetWinEventHook( Native.EVENT_OBJECT_NAMECHANGE, Native.EVENT_OBJECT_NAMECHANGE, IntPtr.Zero, _winProcDelegate, (uint)process.Id, 0, Native.WINEVENT_OUTOFCONTEXT );
         }
 
         public async Task WaitForStartup()
@@ -72,6 +78,8 @@ namespace TabbedAnything
 
             this.Process.EnableRaisingEvents = false;
             this.Process.Exited -= Process_Exited;
+
+            Native.UnhookWinEvent( _hook );
 
             if( !this.Process.HasExited )
             {
@@ -112,6 +120,14 @@ namespace TabbedAnything
         private void Process_Exited( object sender, EventArgs e )
         {
             this.Tab.UiBeginInvoke( (Action)( () => this.Tab.Parent = null ) );
+        }
+
+        private void WinEventProc( IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime )
+        {
+            if( hwnd == this.Process.MainWindowHandle )
+            {
+                this.Tab.Text = Native.GetWindowText( this.Process.MainWindowHandle );
+            }
         }
     }
 
