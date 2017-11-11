@@ -14,8 +14,6 @@ namespace TabbedAnything
     {
         private static ILog LOG = LogManager.GetLogger( typeof( Program ) );
 
-        private static readonly Mutex _mutex = new Mutex( true, "{3a39a5c1-fac2-4059-81d4-5018abfa5142}" );
-
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -36,19 +34,21 @@ namespace TabbedAnything
             Arguments a = new Arguments();
             if( CommandLine.Parser.Default.ParseArguments( args, a ) )
             {
-                if( _mutex.WaitOne( TimeSpan.Zero, true ) )
+                Mutex mutex = new Mutex( true, "{3a39a5c1-fac2-4059-81d4-5018abfa5142}+" + a.ProcessName );
+
+                if( mutex.WaitOne( TimeSpan.Zero, true ) )
                 {
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault( false );
 
                     LOG.Debug( "Starting Tabbed Anything" );
-                    Application.Run( ProgramForm.Create( a.Startup ) );
-                    _mutex.ReleaseMutex();
+                    Application.Run( ProgramForm.Create( a.Startup, a.ProcessName ) );
+                    mutex.ReleaseMutex();
                 }
                 else
                 {
                     LOG.Debug( "Tabbed Anything instance already exists" );
-                    Native.PostMessage( (IntPtr)Native.HWND_BROADCAST, ProgramForm.WM_SHOWME, IntPtr.Zero, IntPtr.Zero );
+                    ProgramForm.ShowMe( a.ProcessName );
                 }
             }
 

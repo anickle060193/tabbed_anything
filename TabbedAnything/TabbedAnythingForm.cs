@@ -35,9 +35,7 @@ namespace TabbedAnything
         };
 
         private readonly Dictionary<int, TabControllerTag> _tags = new Dictionary<int, TabControllerTag>();
-        private readonly CommonOpenFileDialog _folderDialog;
         private readonly Point _createdAtPoint;
-        private readonly Stack<String> _closedRepos = new Stack<String>();
 
         public TabbedAnythingForm( Point createdAtPoint )
         {
@@ -47,9 +45,6 @@ namespace TabbedAnything
             InitializeEventHandlers();
 
             _createdAtPoint = createdAtPoint;
-
-            _folderDialog = new CommonOpenFileDialog();
-            _folderDialog.IsFolderPicker = true;
 
             UpdateFromSettings( true );
         }
@@ -72,7 +67,7 @@ namespace TabbedAnything
         {
             if( FORWARD_KEYS.Any( k => keyData == k ) )
             {
-                TabControllerTag tag = LogTabs.SelectedTab?.Controller();
+                TabControllerTag tag = ProcessTabs.SelectedTab?.Controller();
                 if( tag != null )
                 {
                     Native.SetForegroundWindow( tag.Process.MainWindowHandle );
@@ -99,7 +94,7 @@ namespace TabbedAnything
                     this.StartPosition = FormStartPosition.Manual;
 
                     Rectangle formBounds = this.Bounds;
-                    Rectangle tabBounds = LogTabs.RectangleToScreen( LogTabs.GetTabRect( 0 ) );
+                    Rectangle tabBounds = ProcessTabs.RectangleToScreen( ProcessTabs.GetTabRect( 0 ) );
                     int tabX = tabBounds.Left - formBounds.Left;
                     int tabY = tabBounds.Top - formBounds.Top;
 
@@ -113,21 +108,6 @@ namespace TabbedAnything
                     this.WindowState = FormWindowState.Maximized;
                 }
             }
-
-            lock( _tags )
-            {
-                foreach( TabControllerTag tag in _tags.Values )
-                {
-                    tag.UpdateTabDisplay();
-                    tag.UpdateIcon();
-                }
-            }
-        }
-
-        private async Task OpenLog( String path, IEnumerable<String> references = null )
-        {
-            Process p = GitAction.Log( path, references );
-            await AddNewLogProcess( p, path );
         }
 
         internal async void HandleKeyboardShortcut( KeyboardShortcuts keyboardShortcut )
@@ -136,30 +116,19 @@ namespace TabbedAnything
 
             if( keyboardShortcut == KeyboardShortcuts.NewTab )
             {
-                await FindRepo();
+                await StartNewProcess();
             }
             else if( keyboardShortcut == KeyboardShortcuts.NextTab )
             {
-                LogTabs.NextTab();
+                ProcessTabs.NextTab();
             }
             else if( keyboardShortcut == KeyboardShortcuts.PreviousTab )
             {
-                LogTabs.PreviousTab();
+                ProcessTabs.PreviousTab();
             }
             else if( keyboardShortcut == KeyboardShortcuts.CloseTab )
             {
-                CloseTab( LogTabs.SelectedTab );
-            }
-            else if( keyboardShortcut == KeyboardShortcuts.ReopenClosedTab )
-            {
-                if( _closedRepos.Count > 0 )
-                {
-                    String repo = _closedRepos.Pop();
-
-                    LOG.DebugFormat( "HotKey - Reopen Closed Tab - Reopening: {0}", repo );
-
-                    await OpenLog( repo );
-                }
+                CloseTab( ProcessTabs.SelectedTab );
             }
             else
             {
@@ -173,29 +142,29 @@ namespace TabbedAnything
 
             TabControllerTag tag = tab.Controller();
 
-            if( this.OwnsLogProcess( tag.Process ) )
+            if( this.OwnsProcess( tag.Process ) )
             {
                 LOG.ErrorFormat( "AddExistingTab - Already own process - PID: {0}", tag.Process.Id );
                 return;
             }
 
-            LogTabs.Tabs.Add( tab );
-            LogTabs.SelectedTab = tab;
+            ProcessTabs.Tabs.Add( tab );
+            ProcessTabs.SelectedTab = tab;
         }
 
-        internal async Task AddNewLogProcess( Process p, String path )
+        internal async Task AddNewProcess( Process p )
         {
             TabControllerTag tag;
             lock( _tags )
             {
-                LOG.DebugFormat( "AddNewLogProcess - Path: {0} - PID: {1}", path, p.Id );
-                if( this.OwnsLogProcess( p ) )
+                LOG.DebugFormat( "AddNewProcess - PID: {0}", p.Id );
+                if( this.OwnsProcess( p ) )
                 {
-                    LOG.DebugFormat( "AddNewLogProcess - Process already under control - Path: {0} - PID: {1}", path, p.Id );
+                    LOG.DebugFormat( "AddNewProcess - Process already under control - PID: {0}", p.Id );
                     return;
                 }
 
-                tag = TabControllerTag.CreateController( p, path );
+                tag = TabControllerTag.CreateController( p );
                 _tags.Add( tag.Process.Id, tag );
             }
 
@@ -203,10 +172,15 @@ namespace TabbedAnything
 
             KeyboardShortcutsManager.Instance.AddHandle( tag.Process.MainWindowHandle );
 
-            LogTabs.Tabs.Add( tag.Tab );
-            LogTabs.SelectedTab = tag.Tab;
+            ProcessTabs.Tabs.Add( tag.Tab );
+            ProcessTabs.SelectedTab = tag.Tab;
 
             ShowMe();
+        }
+
+        private async Task StartNewProcess()
+        {
+            await Task.Delay( 10 );
         }
 
         private void RegisterExistingTab( Tab tab )
@@ -215,7 +189,7 @@ namespace TabbedAnything
 
             TabControllerTag tag = tab.Controller();
 
-            if( this.OwnsLogProcess( tag.Process ) )
+            if( this.OwnsProcess( tag.Process ) )
             {
                 LOG.ErrorFormat( "RegisterExistingTab - Already own process - PID: {0}", tag.Process.Id );
                 return;
@@ -229,15 +203,15 @@ namespace TabbedAnything
             ShowMe();
         }
 
-        private void RemoveLogProcess( Process p, bool killProcess )
+        private void RemoveProcess( Process p, bool killProcess )
         {
-            LOG.DebugFormat( "RemoveLogProcess - PID: {0} - Kill Process: {1}", p.Id, killProcess );
+            LOG.DebugFormat( "RemoveProcess - PID: {0} - Kill Process: {1}", p.Id, killProcess );
 
             lock( _tags )
             {
-                if( !this.OwnsLogProcess( p ) )
+                if( !this.OwnsProcess( p ) )
                 {
-                    LOG.ErrorFormat( "Attempting to remove log not under control - Process ID: {0}", p.Id );
+                    LOG.ErrorFormat( "Attempting to remove process not under control - Process ID: {0}", p.Id );
                     return;
                 }
 
@@ -249,8 +223,6 @@ namespace TabbedAnything
 
                 if( killProcess )
                 {
-                    _closedRepos.Push( tag.RepoItem );
-
                     KeyboardShortcutsManager.Instance.RemoveHandle( p.MainWindowHandle );
 
                     tag.Close();
@@ -258,15 +230,15 @@ namespace TabbedAnything
             }
         }
 
-        private void RemoveAllLogs()
+        private void RemoveAllProcesses()
         {
             lock( _tags )
             {
-                LOG.DebugFormat( "RemoveAllLogs - Count: {0}", _tags.Count );
+                LOG.DebugFormat( "RemoveAllProcesses - Count: {0}", _tags.Count );
 
                 while( _tags.Count > 0 )
                 {
-                    RemoveLogProcess( _tags.Values.First().Process, true );
+                    RemoveProcess( _tags.Values.First().Process, true );
                 }
             }
         }
@@ -275,16 +247,16 @@ namespace TabbedAnything
         {
             TabControllerTag t = tab.Controller();
 
-            LOG.DebugFormat( "Close Tab - Repo: {0} - ID: {1}", t.RepoItem, t.Process.Id );
+            LOG.DebugFormat( "Close Tab - ID: {0}", t.Process.Id );
 
-            RemoveLogProcess( t.Process, true );
+            RemoveProcess( t.Process, true );
 
             CheckIfLastTab();
         }
 
         private void CheckIfLastTab()
         {
-            if( LogTabs.TabCount == 0
+            if( ProcessTabs.TabCount == 0
              && Settings.Default.CloseWindowOnLastTabClosed )
             {
                 LOG.Debug( "CheckIfLastTab - Closing window after last tab closed" );
@@ -292,11 +264,11 @@ namespace TabbedAnything
             }
         }
 
-        internal bool OwnsLogProcess( Process logProcess )
+        internal bool OwnsProcess( Process process )
         {
             lock( _tags )
             {
-                return _tags.ContainsKey( logProcess.Id );
+                return _tags.ContainsKey( process.Id );
             }
         }
 

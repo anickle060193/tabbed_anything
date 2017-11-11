@@ -28,20 +28,20 @@ namespace TabbedAnything
             this.ResizeEnd += TabbedAnythingForm_ResizeEnd;
             this.FormClosing += TabbedAnythingForm_FormClosing;
 
-            LogTabs.NewTabClick += LogTabs_NewTabClick;
-            LogTabs.TabAdded += LogTabs_TabAdded;
-            LogTabs.TabRemoved += LogTabs_TabRemoved;
-            LogTabs.TabClosed += LogTabs_TabClosed;
-            LogTabs.TabPulledOut += LogTabs_TabPulledOut;
-            LogTabs.SelectedTabChanged += LogTabs_SelectedTabChanged;
+            ProcessTabs.NewTabClick += ProcessTabs_NewTabClick;
+            ProcessTabs.TabAdded += ProcessTabs_TabAdded;
+            ProcessTabs.TabRemoved += ProcessTabs_TabRemoved;
+            ProcessTabs.TabClosed += ProcessTabs_TabClosed;
+            ProcessTabs.TabPulledOut += ProcessTabs_TabPulledOut;
+            ProcessTabs.SelectedTabChanged += ProcessTabs_SelectedTabChanged;
 
-            OpenRepoMenuItem.Click += OpenRepoMenuItem_Click;
+            OpenNewTabMenuItem.Click += OpenNewTabMenuItem_Click;
             SettingsMenuItem.Click += SettingsMenuItem_Click;
             ShowDebugLogMenuItem.Click += ShowDebugLogMenuItem_Click;
             AboutMenuItem.Click += AboutMenuItem_Click;
             ExitMenuItem.Click += ExitMenuItem_Click;
 
-            CloseRepoTabMenuItem.Click += CloseRepoTabMenuItem_Click;
+            CloseTabMenuItem.Click += CloseTabMenuItem_Click;
         }
 
         private async void TabbedAnythingForm_VisibleChanged( object sender, EventArgs e )
@@ -114,51 +114,51 @@ namespace TabbedAnything
                 }
             }
 
-            LogTabs.TabRemoved -= LogTabs_TabRemoved;
-            LogTabs.TabClosed -= LogTabs_TabClosed;
+            ProcessTabs.TabRemoved -= ProcessTabs_TabRemoved;
+            ProcessTabs.TabClosed -= ProcessTabs_TabClosed;
 
-            RemoveAllLogs();
+            RemoveAllProcesses();
             SaveWindowState();
         }
 
-        private async void LogTabs_NewTabClick( object sender, EventArgs e )
+        private async void ProcessTabs_NewTabClick( object sender, EventArgs e )
         {
-            await FindRepo();
+            await StartNewProcess();
         }
 
-        private void LogTabs_TabAdded( object sender, TabAddedEventArgs e )
+        private void ProcessTabs_TabAdded( object sender, TabAddedEventArgs e )
         {
             LOG.DebugFormat( "TabAdded - Tab: {0}", e.Tab );
 
             RegisterExistingTab( e.Tab );
         }
 
-        private void LogTabs_TabRemoved( object sender, TabRemovedEventArgs e )
+        private void ProcessTabs_TabRemoved( object sender, TabRemovedEventArgs e )
         {
             LOG.DebugFormat( "TabRemoved - Tab: {0}", e.Tab );
 
-            this.RemoveLogProcess( e.Tab.Controller().Process, false );
+            this.RemoveProcess( e.Tab.Controller().Process, false );
 
             CheckIfLastTab();
         }
 
-        private void LogTabs_TabClosed( object sender, TabClosedEventArgs e )
+        private void ProcessTabs_TabClosed( object sender, TabClosedEventArgs e )
         {
             LOG.Debug( "Tab Closed" );
 
             CloseTab( e.Tab );
         }
 
-        private void LogTabs_TabPulledOut( object sender, TabPulledOutEventArgs e )
+        private void ProcessTabs_TabPulledOut( object sender, TabPulledOutEventArgs e )
         {
             ProgramForm.Instance.CreateNewFromTab( e.Tab, e.Location );
         }
 
-        private void LogTabs_SelectedTabChanged( object sender, EventArgs e )
+        private void ProcessTabs_SelectedTabChanged( object sender, EventArgs e )
         {
-            if( LogTabs.SelectedTab != null )
+            if( ProcessTabs.SelectedTab != null )
             {
-                this.Text = LogTabs.SelectedTab.Text + " - Tabbed Anything";
+                this.Text = ProcessTabs.SelectedTab.Text + " - Tabbed Anything";
             }
             else
             {
@@ -166,9 +166,9 @@ namespace TabbedAnything
             }
         }
 
-        private async void OpenRepoMenuItem_Click( object sender, EventArgs e )
+        private async void OpenNewTabMenuItem_Click( object sender, EventArgs e )
         {
-            await FindRepo();
+            await StartNewProcess();
         }
 
         private void SettingsMenuItem_Click( object sender, EventArgs e )
@@ -198,10 +198,10 @@ namespace TabbedAnything
             this.Close();
         }
 
-        private void CloseRepoTabMenuItem_Click( object sender, EventArgs e )
+        private void CloseTabMenuItem_Click( object sender, EventArgs e )
         {
-            LOG.Debug( "Tab Menu Item - Close Repo Click" );
-            CloseTab( LogTabs.SelectedTab );
+            LOG.Debug( "Tab Menu Item - Close Tab Click" );
+            CloseTab( ProcessTabs.SelectedTab );
         }
     }
 }

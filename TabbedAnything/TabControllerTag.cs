@@ -21,18 +21,18 @@ namespace TabbedAnything
         public Tab Tab { get; private set; }
         public Process Process { get; private set; }
 
-        public static TabControllerTag CreateController( Process p, String repo )
+        public static TabControllerTag CreateController( Process p )
         {
-            Tab t = new Tab( repo );
+            Tab t = new Tab( "Tab" );
 
-            TabControllerTag tag = new TabControllerTag( t, p, repo );
+            TabControllerTag tag = new TabControllerTag( t, p );
 
             t.Tag = tag;
 
             return tag;
         }
 
-        private TabControllerTag( Tab tab, Process process, String repo )
+        private TabControllerTag( Tab tab, Process process )
         {
             Tab = tab;
             Process = process;

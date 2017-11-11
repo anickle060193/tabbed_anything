@@ -31,15 +31,15 @@
             this.components = new System.ComponentModel.Container();
             this.NewTabContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.TabContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.CloseRepoTabMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CloseTabMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.OpenRepoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.OpenNewTabMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsMenuSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.SettingsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ShowDebugLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.LogTabs = new Tabs.TabControl();
+            this.ProcessTabs = new Tabs.TabControl();
             this.TabContextMenu.SuspendLayout();
             this.OptionsContextMenu.SuspendLayout();
             this.SuspendLayout();
@@ -52,21 +52,21 @@
             // TabContextMenu
             // 
             this.TabContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.CloseRepoTabMenuItem});
+            this.CloseTabMenuItem});
             this.TabContextMenu.Name = "TabContextMenu";
             this.TabContextMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.TabContextMenu.Size = new System.Drawing.Size(104, 26);
+            this.TabContextMenu.Size = new System.Drawing.Size(153, 48);
             // 
-            // CloseRepoTabMenuItem
+            // CloseTabMenuItem
             // 
-            this.CloseRepoTabMenuItem.Name = "CloseRepoTabMenuItem";
-            this.CloseRepoTabMenuItem.Size = new System.Drawing.Size(103, 22);
-            this.CloseRepoTabMenuItem.Text = "Close";
+            this.CloseTabMenuItem.Name = "CloseTabMenuItem";
+            this.CloseTabMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.CloseTabMenuItem.Text = "Close";
             // 
             // OptionsContextMenu
             // 
             this.OptionsContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.OpenRepoMenuItem,
+            this.OpenNewTabMenuItem,
             this.OptionsMenuSeparator,
             this.SettingsMenuItem,
             this.ShowDebugLogMenuItem,
@@ -75,11 +75,11 @@
             this.OptionsContextMenu.Name = "OptionsContextMenu";
             this.OptionsContextMenu.Size = new System.Drawing.Size(165, 120);
             // 
-            // OpenRepoMenuItem
+            // OpenNewTabMenuItem
             // 
-            this.OpenRepoMenuItem.Name = "OpenRepoMenuItem";
-            this.OpenRepoMenuItem.Size = new System.Drawing.Size(164, 22);
-            this.OpenRepoMenuItem.Text = "Open Repo";
+            this.OpenNewTabMenuItem.Name = "OpenNewTabMenuItem";
+            this.OpenNewTabMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.OpenNewTabMenuItem.Text = "Open New Tab";
             // 
             // OptionsMenuSeparator
             // 
@@ -110,16 +110,16 @@
             this.ExitMenuItem.Size = new System.Drawing.Size(164, 22);
             this.ExitMenuItem.Text = "Exit";
             // 
-            // LogTabs
+            // ProcessTabs
             // 
-            this.LogTabs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.LogTabs.Location = new System.Drawing.Point(0, 0);
-            this.LogTabs.Name = "LogTabs";
-            this.LogTabs.NewTabContextMenu = this.NewTabContextMenu;
-            this.LogTabs.OptionsMenu = this.OptionsContextMenu;
-            this.LogTabs.Size = new System.Drawing.Size(644, 486);
-            this.LogTabs.TabContextMenu = this.TabContextMenu;
-            this.LogTabs.TabIndex = 3;
+            this.ProcessTabs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ProcessTabs.Location = new System.Drawing.Point(0, 0);
+            this.ProcessTabs.Name = "ProcessTabs";
+            this.ProcessTabs.NewTabContextMenu = this.NewTabContextMenu;
+            this.ProcessTabs.OptionsMenu = this.OptionsContextMenu;
+            this.ProcessTabs.Size = new System.Drawing.Size(644, 486);
+            this.ProcessTabs.TabContextMenu = this.TabContextMenu;
+            this.ProcessTabs.TabIndex = 3;
             // 
             // TabbedAnythingForm
             // 
@@ -127,7 +127,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(644, 486);
-            this.Controls.Add(this.LogTabs);
+            this.Controls.Add(this.ProcessTabs);
             this.MinimumSize = new System.Drawing.Size(660, 525);
             this.Name = "TabbedAnythingForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
@@ -141,10 +141,10 @@
         #endregion
         private System.Windows.Forms.ContextMenuStrip NewTabContextMenu;
         private System.Windows.Forms.ContextMenuStrip TabContextMenu;
-        private System.Windows.Forms.ToolStripMenuItem CloseRepoTabMenuItem;
-        private Tabs.TabControl LogTabs;
+        private System.Windows.Forms.ToolStripMenuItem CloseTabMenuItem;
+        private Tabs.TabControl ProcessTabs;
         private System.Windows.Forms.ContextMenuStrip OptionsContextMenu;
-        private System.Windows.Forms.ToolStripMenuItem OpenRepoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem OpenNewTabMenuItem;
         private System.Windows.Forms.ToolStripSeparator OptionsMenuSeparator;
         private System.Windows.Forms.ToolStripMenuItem SettingsMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AboutMenuItem;

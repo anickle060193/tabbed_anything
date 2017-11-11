@@ -19,8 +19,6 @@ namespace TabbedAnything
         PreviousTab,
         [Description( "Close Tab" )]
         CloseTab,
-        [Description( "Reopen Closed Tab" )]
-        ReopenClosedTab,
     }
 
     class KeyboardShortcutPressedEventArgs : EventArgs
